@@ -1,28 +1,29 @@
-name: Deployment
-on: [push]
+name: deploy docs
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
-  Deploy:
-    runs-on: self-hosted
-    
+  build:
+    runs-on: ubuntu-latest
+
     steps:
+      - uses: actions/checkout@v4
 
-      - name: Compile and build snippets
-        run: |
-          cd ~/actions-runner/_work/docs_compiler
-          node .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      - name: Push new snippets to repository
-        run: |
-          cd ~/actions-runner/_work/docs_compiler
-          cd dist
-          git commit -m "Update snippets"
-          git push
+      - run: npm install
+      - run: npm run docs:build
 
-      - name: Build and publish VSCode extension
-        run: |
-          cd ~/actions-runner/_work/docs_compiler
-          cd dist/vscode
-          vsce package
-          vsce publish
-
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .vitepress/dist
