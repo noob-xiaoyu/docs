@@ -25,3 +25,4 @@ jobs:
           cd dist/vscode
           vsce package
           vsce publish
+
